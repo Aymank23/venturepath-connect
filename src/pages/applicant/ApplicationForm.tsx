@@ -77,7 +77,7 @@ export default function ApplicationForm() {
         venture_title: ventureTitle,
         venture_summary: ventureSummary,
         motivation_statement: motivationStatement,
-        category: category || null,
+        category: (category || null) as any,
         alumni_graduation_year: alumniYear ? parseInt(alumniYear) : null,
         alumni_school: alumniSchool || null,
         commitment_agreed: commitmentAgreed,
