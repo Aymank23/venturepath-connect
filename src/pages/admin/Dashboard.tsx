@@ -90,7 +90,7 @@ export default function AdminDashboard() {
                     <div className="h-3 w-3 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
                     <span className="text-sm capitalize">{s.name}</span>
                   </div>
-                  <span className="font-medium">{s.value}</span>
+                  <span className="font-medium">{String(s.value)}</span>
                 </div>
               ))}
             </div>
