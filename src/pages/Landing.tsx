@@ -1,7 +1,8 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Lightbulb, Users, Award } from 'lucide-react';
+import { GraduationCap, Briefcase, ArrowRight, Lightbulb, Users, Award } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function Landing() {
   const { user, loading } = useAuth();
@@ -18,14 +19,10 @@ export default function Landing() {
             </div>
             <span className="font-heading font-bold text-lg">IEP Platform</span>
           </div>
-          <div className="flex items-center gap-3">
-            <Link to="/login"><Button variant="ghost">Sign In</Button></Link>
-            <Link to="/signup"><Button>Apply Now</Button></Link>
-          </div>
         </div>
       </header>
 
-      <section className="container py-20 md:py-32 text-center max-w-3xl mx-auto space-y-6">
+      <section className="container py-20 md:py-28 text-center max-w-3xl mx-auto space-y-6">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-heading tracking-tight">
           Innovation &<br />
           <span className="text-primary">Entrepreneurship Program</span>
@@ -33,9 +30,48 @@ export default function Landing() {
         <p className="text-lg text-muted-foreground max-w-xl mx-auto">
           Transform your venture idea into reality. Apply to our program and get access to mentorship, resources, and a community of innovators.
         </p>
-        <div className="flex gap-3 justify-center">
-          <Link to="/signup"><Button size="lg" className="gap-2">Start Application <ArrowRight className="h-4 w-4" /></Button></Link>
-          <Link to="/login"><Button size="lg" variant="outline">Sign In</Button></Link>
+      </section>
+
+      <section className="container pb-20">
+        <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+          <Card className="group hover:shadow-lg transition-shadow border-2 hover:border-primary/40">
+            <CardContent className="pt-8 pb-8 px-8 text-center space-y-4">
+              <div className="mx-auto h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <GraduationCap className="h-7 w-7 text-primary" />
+              </div>
+              <h2 className="font-heading font-bold text-xl">Participant Access</h2>
+              <p className="text-sm text-muted-foreground">
+                LAU students and alumni — sign up or log in to submit your venture application.
+              </p>
+              <div className="flex flex-col gap-2 pt-2">
+                <Link to="/signup">
+                  <Button className="w-full gap-2">
+                    Apply Now <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link to="/login?role=participant">
+                  <Button variant="outline" className="w-full">Sign In</Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="group hover:shadow-lg transition-shadow border-2 hover:border-muted-foreground/30">
+            <CardContent className="pt-8 pb-8 px-8 text-center space-y-4">
+              <div className="mx-auto h-14 w-14 rounded-2xl bg-muted flex items-center justify-center">
+                <Briefcase className="h-7 w-7 text-muted-foreground" />
+              </div>
+              <h2 className="font-heading font-bold text-xl">Staff Access</h2>
+              <p className="text-sm text-muted-foreground">
+                Reviewers, mentors, and administrators — log in to your workspace.
+              </p>
+              <div className="pt-2">
+                <Link to="/login?role=staff">
+                  <Button variant="secondary" className="w-full">Staff Sign In</Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
