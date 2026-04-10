@@ -33,6 +33,7 @@ export default function ApplicationForm() {
   const [ventureTitle, setVentureTitle] = useState('');
   const [ventureSummary, setVentureSummary] = useState('');
   const [motivationStatement, setMotivationStatement] = useState('');
+  const [track, setTrack] = useState('');
   const [category, setCategory] = useState('');
   const [alumniYear, setAlumniYear] = useState('');
   const [alumniSchool, setAlumniSchool] = useState('');
@@ -53,6 +54,7 @@ export default function ApplicationForm() {
       setVentureTitle(data.venture_title || '');
       setVentureSummary(data.venture_summary || '');
       setMotivationStatement(data.motivation_statement || '');
+      setTrack((data as any).track || '');
       setCategory(data.category || '');
       setAlumniYear(data.alumni_graduation_year?.toString() || '');
       setAlumniSchool(data.alumni_school || '');
@@ -77,6 +79,7 @@ export default function ApplicationForm() {
         venture_title: ventureTitle,
         venture_summary: ventureSummary,
         motivation_statement: motivationStatement,
+        track: (track || null) as any,
         category: (category || null) as any,
         alumni_graduation_year: alumniYear ? parseInt(alumniYear) : null,
         alumni_school: alumniSchool || null,
@@ -169,6 +172,26 @@ export default function ApplicationForm() {
         <h1 className="text-2xl font-bold font-heading">Application Form</h1>
         <p className="text-muted-foreground">Complete all sections before submitting</p>
       </div>
+
+      {/* Program Track */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-heading text-lg">Program Track</CardTitle>
+          <CardDescription>Select the track you are applying for</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Track *</Label>
+            <Select value={track} onValueChange={setTrack}>
+              <SelectTrigger><SelectValue placeholder="Choose your track" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="innovation_entrepreneurship">Innovation & Entrepreneurship</SelectItem>
+                <SelectItem value="ai_innovation">AI Innovation</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Venture Information */}
       <Card>
@@ -288,7 +311,7 @@ export default function ApplicationForm() {
           <Save className="h-4 w-4" /> Save Draft
         </Button>
         <Button onClick={() => {
-          if (!ventureTitle || !ventureSummary || !motivationStatement || !category || !commitmentAgreed) {
+          if (!track || !ventureTitle || !ventureSummary || !motivationStatement || !category || !commitmentAgreed) {
             toast.error('Please complete all required fields and agree to the commitment');
             return;
           }
