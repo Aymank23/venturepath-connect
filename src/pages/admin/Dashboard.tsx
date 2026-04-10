@@ -2,14 +2,21 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { StatCard } from '@/components/StatCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { StatusBadge } from '@/components/StatusBadge';
-import { FileText, CheckCircle, XCircle, Clock, Users, Award, BarChart3, AlertCircle } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { FileText, CheckCircle, XCircle, Clock, Award, BarChart3, AlertCircle } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+
+const trackLabels: Record<string, string> = {
+  innovation_entrepreneurship: 'Innovation & Entrepreneurship',
+  ai_innovation: 'AI Innovation',
+};
 
 export default function AdminDashboard() {
-  const [applications, setApplications] = useState<any[]>([]);
+  const [allApplications, setAllApplications] = useState<any[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
   const [mentorships, setMentorships] = useState<any[]>([]);
+  const [trackFilter, setTrackFilter] = useState('all');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,7 +26,7 @@ export default function AdminDashboard() {
         supabase.from('reviews').select('*'),
         supabase.from('mentorship_records').select('*'),
       ]);
-      setApplications(apps || []);
+      setAllApplications(apps || []);
       setReviews(revs || []);
       setMentorships(ments || []);
       setLoading(false);
@@ -29,12 +36,20 @@ export default function AdminDashboard() {
 
   if (loading) return <div className="flex items-center justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
+  const applications = trackFilter === 'all'
+    ? allApplications
+    : allApplications.filter(a => (a as any).track === trackFilter);
+
+  const appIds = new Set(applications.map(a => a.id));
+  const filteredReviews = reviews.filter(r => appIds.has(r.application_id));
+  const filteredMentorships = mentorships.filter(m => appIds.has(m.application_id));
+
   const statusCounts = applications.reduce((acc: Record<string, number>, a) => { acc[a.status] = (acc[a.status] || 0) + 1; return acc; }, {});
   const submitted = applications.filter(a => a.status !== 'draft').length;
   const accepted = statusCounts['accepted'] || 0;
   const rejected = statusCounts['rejected'] || 0;
-  const completedReviews = reviews.filter(r => r.review_status === 'completed').length;
-  const mentorshipsAssigned = mentorships.filter(m => m.mentorship_assigned).length;
+  const completedReviews = filteredReviews.filter(r => r.review_status === 'completed').length;
+  const mentorshipsAssigned = filteredMentorships.filter(m => m.mentorship_assigned).length;
 
   const statusData = Object.entries(statusCounts).map(([name, value]) => ({ name: name.replace('_', ' '), value }));
   const COLORS = ['hsl(var(--muted))', 'hsl(var(--info))', 'hsl(var(--warning))', 'hsl(var(--success))', 'hsl(var(--destructive))', 'hsl(var(--accent))'];
@@ -47,9 +62,19 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold font-heading">Admin Dashboard</h1>
-        <p className="text-muted-foreground">Program overview and management</p>
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-2xl font-bold font-heading">Admin Dashboard</h1>
+          <p className="text-muted-foreground">Program overview and management</p>
+        </div>
+        <Select value={trackFilter} onValueChange={setTrackFilter}>
+          <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Tracks</SelectItem>
+            <SelectItem value="innovation_entrepreneurship">Innovation & Entrepreneurship</SelectItem>
+            <SelectItem value="ai_innovation">AI Innovation</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -74,7 +99,7 @@ export default function AdminDashboard() {
                 <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                 <YAxis allowDecimals={false} />
                 <Tooltip />
-                <Bar dataKey="count" fill="hsl(158, 64%, 32%)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="count" fill="hsl(168, 100%, 20%)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

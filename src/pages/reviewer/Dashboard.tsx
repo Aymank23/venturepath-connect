@@ -2,21 +2,28 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { StatCard } from '@/components/StatCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { FileText, CheckCircle, Clock, BarChart3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+const trackLabels: Record<string, string> = {
+  innovation_entrepreneurship: 'Innovation & Entrepreneurship',
+  ai_innovation: 'AI Innovation',
+};
+
 export default function ReviewerDashboard() {
-  const [applications, setApplications] = useState<any[]>([]);
+  const [allApplications, setAllApplications] = useState<any[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
+  const [trackFilter, setTrackFilter] = useState('all');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
       const { data: apps } = await supabase.from('applications').select('*').neq('status', 'draft').order('submitted_at', { ascending: false });
       const { data: revs } = await supabase.from('reviews').select('*');
-      setApplications(apps || []);
+      setAllApplications(apps || []);
       setReviews(revs || []);
       setLoading(false);
     };
@@ -25,15 +32,32 @@ export default function ReviewerDashboard() {
 
   if (loading) return <div className="flex items-center justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
-  const reviewed = reviews.filter(r => r.review_status === 'completed').length;
+  const applications = trackFilter === 'all'
+    ? allApplications
+    : allApplications.filter(a => (a as any).track === trackFilter);
+
+  const appIds = new Set(applications.map(a => a.id));
+  const filteredReviews = reviews.filter(r => appIds.has(r.application_id));
+
+  const reviewed = filteredReviews.filter(r => r.review_status === 'completed').length;
   const pending = applications.length - reviewed;
-  const avgScore = reviews.length > 0 ? (reviews.reduce((sum, r) => sum + (Number(r.weighted_total_score) || 0), 0) / reviews.length).toFixed(2) : '—';
+  const avgScore = filteredReviews.length > 0 ? (filteredReviews.reduce((sum, r) => sum + (Number(r.weighted_total_score) || 0), 0) / filteredReviews.length).toFixed(2) : '—';
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold font-heading">Reviewer Dashboard</h1>
-        <p className="text-muted-foreground">Review submitted applications</p>
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-2xl font-bold font-heading">Reviewer Dashboard</h1>
+          <p className="text-muted-foreground">Review submitted applications</p>
+        </div>
+        <Select value={trackFilter} onValueChange={setTrackFilter}>
+          <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Tracks</SelectItem>
+            <SelectItem value="innovation_entrepreneurship">Innovation & Entrepreneurship</SelectItem>
+            <SelectItem value="ai_innovation">AI Innovation</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -56,7 +80,14 @@ export default function ReviewerDashboard() {
                   <div key={app.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
                       <p className="font-medium">{app.venture_title || 'Untitled'}</p>
-                      <p className="text-sm text-muted-foreground">{app.submitted_at ? new Date(app.submitted_at).toLocaleDateString() : ''}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        {(app as any).track && (
+                          <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium bg-accent text-accent-foreground">
+                            {trackLabels[(app as any).track]}
+                          </span>
+                        )}
+                        <span className="text-sm text-muted-foreground">{app.submitted_at ? new Date(app.submitted_at).toLocaleDateString() : ''}</span>
+                      </div>
                     </div>
                     <div className="flex items-center gap-3">
                       <StatusBadge status={review?.review_status || 'pending'} />
