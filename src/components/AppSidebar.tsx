@@ -8,6 +8,7 @@ import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
   SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar,
 } from '@/components/ui/sidebar';
+import lauLogo from '@/assets/lau-aksob-logo.png';
 
 const navConfig: Record<string, { title: string; url: string; icon: any }[]> = {
   applicant: [
@@ -47,17 +48,11 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent>
         <div className="p-4 border-b">
-          {!collapsed && (
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm font-heading">IE</span>
-              </div>
-              <span className="font-heading font-semibold text-sm">IEP Platform</span>
-            </div>
-          )}
-          {collapsed && (
+          {!collapsed ? (
+            <img src={lauLogo} alt="LAU AKSOB" className="h-8 object-contain" />
+          ) : (
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center mx-auto">
-              <span className="text-primary-foreground font-bold text-xs">IE</span>
+              <span className="text-primary-foreground font-bold text-xs">LAU</span>
             </div>
           )}
         </div>

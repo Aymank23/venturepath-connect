@@ -70,6 +70,7 @@ export type Database = {
           motivation_statement: string | null
           status: Database["public"]["Enums"]["application_status"]
           submitted_at: string | null
+          track: Database["public"]["Enums"]["application_track"] | null
           updated_at: string
           user_id: string
           venture_summary: string | null
@@ -85,6 +86,7 @@ export type Database = {
           motivation_statement?: string | null
           status?: Database["public"]["Enums"]["application_status"]
           submitted_at?: string | null
+          track?: Database["public"]["Enums"]["application_track"] | null
           updated_at?: string
           user_id: string
           venture_summary?: string | null
@@ -100,6 +102,7 @@ export type Database = {
           motivation_statement?: string | null
           status?: Database["public"]["Enums"]["application_status"]
           submitted_at?: string | null
+          track?: Database["public"]["Enums"]["application_track"] | null
           updated_at?: string
           user_id?: string
           venture_summary?: string | null
@@ -387,6 +390,7 @@ export type Database = {
         | "accepted"
         | "rejected"
         | "waitlisted"
+      application_track: "innovation_entrepreneurship" | "ai_innovation"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -524,6 +528,7 @@ export const Constants = {
         "rejected",
         "waitlisted",
       ],
+      application_track: ["innovation_entrepreneurship", "ai_innovation"],
     },
   },
 } as const
