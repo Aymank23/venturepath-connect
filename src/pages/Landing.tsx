@@ -1,8 +1,9 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { GraduationCap, Briefcase, ArrowRight, Lightbulb, Users, Award } from 'lucide-react';
+import { GraduationCap, ArrowRight, Lightbulb, Users, Award, BookOpen } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import lauLogo from '@/assets/lau-aksob-logo.png';
 
 export default function Landing() {
   const { user, loading } = useAuth();
@@ -11,18 +12,17 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b">
+      <header className="border-b bg-card">
         <div className="container flex items-center justify-between h-16">
-          <div className="flex items-center gap-2">
-            <div className="h-9 w-9 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm font-heading">IE</span>
-            </div>
-            <span className="font-heading font-bold text-lg">IEP Platform</span>
-          </div>
+          <img src={lauLogo} alt="LAU Adnan Kassar School of Business" className="h-10 md:h-12 object-contain" />
         </div>
       </header>
 
       <section className="container py-20 md:py-28 text-center max-w-3xl mx-auto space-y-6">
+        <div className="inline-flex items-center gap-2 rounded-full border bg-card px-4 py-1.5 text-sm text-muted-foreground mb-2">
+          <BookOpen className="h-4 w-4 text-primary" />
+          Adnan Kassar School of Business
+        </div>
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-heading tracking-tight">
           Innovation &<br />
           <span className="text-primary">Entrepreneurship Program</span>
@@ -30,6 +30,14 @@ export default function Landing() {
         <p className="text-lg text-muted-foreground max-w-xl mx-auto">
           Transform your venture idea into reality. Apply to our program and get access to mentorship, resources, and a community of innovators.
         </p>
+        <div className="flex items-center justify-center gap-3 pt-2 flex-wrap">
+          <span className="rounded-full border border-primary/30 bg-accent px-4 py-1.5 text-sm font-medium text-accent-foreground">
+            Innovation & Entrepreneurship Track
+          </span>
+          <span className="rounded-full border border-primary/30 bg-accent px-4 py-1.5 text-sm font-medium text-accent-foreground">
+            AI Innovation Track
+          </span>
+        </div>
       </section>
 
       <section className="container pb-20">
@@ -59,15 +67,15 @@ export default function Landing() {
           <Card className="group hover:shadow-lg transition-shadow border-2 hover:border-muted-foreground/30">
             <CardContent className="pt-8 pb-8 px-8 text-center space-y-4">
               <div className="mx-auto h-14 w-14 rounded-2xl bg-muted flex items-center justify-center">
-                <Briefcase className="h-7 w-7 text-muted-foreground" />
+                <BookOpen className="h-7 w-7 text-muted-foreground" />
               </div>
-              <h2 className="font-heading font-bold text-xl">Staff Access</h2>
+              <h2 className="font-heading font-bold text-xl">Faculty Access</h2>
               <p className="text-sm text-muted-foreground">
                 Reviewers, mentors, and administrators — log in to your workspace.
               </p>
               <div className="pt-2">
                 <Link to="/login?role=staff">
-                  <Button variant="secondary" className="w-full">Staff Sign In</Button>
+                  <Button variant="secondary" className="w-full">Faculty Sign In</Button>
                 </Link>
               </div>
             </CardContent>
@@ -93,10 +101,13 @@ export default function Landing() {
         </div>
       </section>
 
-      <footer className="border-t py-8">
-        <p className="text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Innovation & Entrepreneurship Program. All rights reserved.
-        </p>
+      <footer className="border-t py-8 bg-card">
+        <div className="container flex flex-col md:flex-row items-center justify-between gap-4">
+          <img src={lauLogo} alt="LAU" className="h-8 object-contain opacity-70" />
+          <p className="text-sm text-muted-foreground">
+            © {new Date().getFullYear()} LAU Adnan Kassar School of Business — Innovation & Entrepreneurship Program
+          </p>
+        </div>
       </footer>
     </div>
   );

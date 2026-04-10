@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { GraduationCap } from 'lucide-react';
+import lauLogo from '@/assets/lau-aksob-logo.png';
 
 const LAU_EMAIL_REGEX = /^[^\s@]+@lau\.edu\.lb$/i;
 
@@ -43,7 +44,8 @@ export default function Signup() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md space-y-6 animate-fade-in">
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-4">
+          <img src={lauLogo} alt="LAU" className="h-10 mx-auto object-contain" />
           <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center mx-auto">
             <GraduationCap className="h-6 w-6 text-primary-foreground" />
           </div>
