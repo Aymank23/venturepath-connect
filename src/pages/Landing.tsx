@@ -8,8 +8,7 @@ import lauLogo from '@/assets/lau-aksob-logo.png';
 
 export default function Landing() {
   const { user, loading } = useAuth();
-  if (loading) return null;
-  if (user) return <Navigate to="/app/dashboard" replace />;
+  if (!loading && user) return <Navigate to="/app/dashboard" replace />;
 
   return (
     <div className="min-h-screen bg-background">
