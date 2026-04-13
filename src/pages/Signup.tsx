@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { GraduationCap } from 'lucide-react';
 import lauLogo from '@/assets/lau-aksob-logo.png';
 
-const LAU_EMAIL_REGEX = /^[^\s@]+@lau\.edu\.lb$/i;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Signup() {
   const { user, loading, signUp } = useAuth();
@@ -18,13 +18,12 @@ export default function Signup() {
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  if (loading) return null;
-  if (user) return <Navigate to="/app/dashboard" replace />;
+  if (!loading && user) return <Navigate to="/app/dashboard" replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!LAU_EMAIL_REGEX.test(email)) {
-      toast.error('Please use your LAU email address (@lau.edu.lb)');
+    if (!EMAIL_REGEX.test(email)) {
+      toast.error('Please enter a valid email address');
       return;
     }
     if (password.length < 6) {
@@ -45,13 +44,13 @@ export default function Signup() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md space-y-6 animate-fade-in">
         <div className="text-center space-y-4">
-          <img src={lauLogo} alt="LAU" className="h-10 mx-auto object-contain" />
+          <img src={lauLogo} alt="LAU" className="h-16 md:h-20 mx-auto object-contain" />
           <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center mx-auto">
             <GraduationCap className="h-6 w-6 text-primary-foreground" />
           </div>
           <h1 className="text-2xl font-bold font-heading">Participant Sign Up</h1>
           <p className="text-muted-foreground text-sm">
-            Join the Innovation & Entrepreneurship Program using your LAU email
+            Join the Innovation & Entrepreneurship Program
           </p>
         </div>
         <Card>
@@ -62,9 +61,9 @@ export default function Signup() {
                 <Input id="name" value={fullName} onChange={e => setFullName(e.target.value)} required placeholder="Your full name" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">LAU Email</Label>
-                <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="yourname@lau.edu.lb" />
-                <p className="text-xs text-muted-foreground">Only @lau.edu.lb email addresses are accepted</p>
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="your@email.com" />
+                <p className="text-xs text-muted-foreground">LAU students, alumni, and external applicants welcome</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>

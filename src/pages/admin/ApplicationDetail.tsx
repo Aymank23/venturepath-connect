@@ -7,7 +7,18 @@ import { Label } from '@/components/ui/label';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Trash2, Download } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 export default function AdminApplicationDetail() {
   const { id } = useParams();
@@ -41,6 +52,31 @@ export default function AdminApplicationDetail() {
     toast.success(`Application ${status}`);
   };
 
+  const deleteApplication = async () => {
+    // Delete related records first, then the application
+    await Promise.all([
+      supabase.from('team_members').delete().eq('application_id', id!),
+      supabase.from('application_documents').delete().eq('application_id', id!),
+      supabase.from('reviews').delete().eq('application_id', id!),
+      supabase.from('mentorship_records').delete().eq('application_id', id!),
+      supabase.from('founder_tracking').delete().eq('application_id', id!),
+    ]);
+    await supabase.from('applications').delete().eq('id', id!);
+    toast.success('Application deleted');
+    navigate('/app/admin/applications');
+  };
+
+  const downloadDocument = async (doc: any) => {
+    const { data, error } = await supabase.storage.from('documents').download(doc.file_path);
+    if (error) { toast.error('Download failed'); return; }
+    const url = URL.createObjectURL(data);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = doc.file_name;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   if (loading) return <div className="flex items-center justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
   if (!app) return <div className="text-center py-20 text-muted-foreground">Not found</div>;
 
@@ -53,6 +89,21 @@ export default function AdminApplicationDetail() {
           <p className="text-muted-foreground">Application Detail</p>
         </div>
         <StatusBadge status={app.status} />
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive" size="sm" className="gap-1"><Trash2 className="h-4 w-4" /> Delete</Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Application?</AlertDialogTitle>
+              <AlertDialogDescription>This will permanently delete this application and all related data (team members, documents, reviews). This cannot be undone.</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={deleteApplication} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
       {/* Status Change */}
@@ -127,7 +178,12 @@ export default function AdminApplicationDetail() {
               {documents.map(d => (
                 <div key={d.id} className="p-3 border rounded-lg flex justify-between items-center">
                   <span className="text-sm">{d.file_name}</span>
-                  <span className="text-xs text-muted-foreground">{new Date(d.uploaded_at).toLocaleDateString()}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">{new Date(d.uploaded_at).toLocaleDateString()}</span>
+                    <Button size="sm" variant="outline" className="gap-1" onClick={() => downloadDocument(d)}>
+                      <Download className="h-3 w-3" /> Download
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
