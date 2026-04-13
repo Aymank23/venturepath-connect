@@ -31,6 +31,9 @@ export default function Login() {
     const { error } = await signIn(email, password);
     if (error) {
       toast.error(error.message);
+    } else if (isStaff) {
+      // Set preferred role to a staff role after successful login
+      setActiveRole(null); // Will be resolved by fetchRoles preferring staff
     }
     setSubmitting(false);
   };
