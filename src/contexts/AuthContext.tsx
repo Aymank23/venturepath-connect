@@ -34,9 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const userRoles = (data?.map(r => r.role) || []) as AppRole[];
     setRoles(userRoles);
     if (userRoles.length > 0 && !activeRole) {
-      // Prefer non-applicant role if available (for shared accounts)
-      const preferredRole = userRoles.find(r => r !== 'applicant') || userRoles[0];
-      setActiveRole(preferredRole);
+      setActiveRole(userRoles[0]);
     }
     return userRoles;
   };
