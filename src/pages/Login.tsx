@@ -18,8 +18,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  if (loading) return null;
-  if (user) return <Navigate to="/app/dashboard" replace />;
+  if (!loading && user) return <Navigate to="/app/dashboard" replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +34,7 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md space-y-6 animate-fade-in">
         <div className="text-center space-y-4">
-          <img src={lauLogo} alt="LAU" className="h-10 mx-auto object-contain" />
+          <img src={lauLogo} alt="LAU" className="h-16 md:h-20 mx-auto object-contain" />
           <div className={`h-12 w-12 rounded-xl flex items-center justify-center mx-auto ${isStaff ? 'bg-muted' : 'bg-primary'}`}>
             {isStaff
               ? <BookOpen className="h-6 w-6 text-muted-foreground" />

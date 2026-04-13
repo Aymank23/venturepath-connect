@@ -31,7 +31,7 @@ export default function Landing() {
           animate={{ y: [0, -10, 0], opacity: [0.2, 0.6, 0.2] }}
           transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
         />
-        <div className="container relative flex flex-col items-center justify-center py-8 md:py-10 gap-4 max-w-2xl mx-auto">
+        <div className="container relative flex flex-col items-center justify-center py-6 md:py-8 gap-3 max-w-2xl mx-auto">
           <motion.div
             initial={{ opacity: 0, scale: 0.8, y: 15 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -40,7 +40,7 @@ export default function Landing() {
             <img
               src={lauLogo}
               alt="LAU Adnan Kassar School of Business"
-              className="h-14 md:h-20 lg:h-24 object-contain drop-shadow-md"
+              className="h-12 md:h-16 lg:h-20 object-contain drop-shadow-md"
             />
           </motion.div>
           <motion.div
