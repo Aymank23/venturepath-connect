@@ -10,7 +10,7 @@ import { GraduationCap, BookOpen } from 'lucide-react';
 import lauLogo from '@/assets/lau-aksob-logo.png';
 
 export default function Login() {
-  const { user, loading, signIn } = useAuth();
+  const { user, loading, signIn, setActiveRole } = useAuth();
   const [searchParams] = useSearchParams();
   const isStaff = searchParams.get('role') === 'staff';
 
@@ -18,7 +18,12 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  if (!loading && user) return <Navigate to="/app/dashboard" replace />;
+  if (!loading && user) {
+    if (isStaff) {
+      return <Navigate to="/app/dashboard" state={{ preferStaff: true }} replace />;
+    }
+    return <Navigate to="/app/dashboard" replace />;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,6 +31,9 @@ export default function Login() {
     const { error } = await signIn(email, password);
     if (error) {
       toast.error(error.message);
+    } else if (isStaff) {
+      // Set preferred role to a staff role after successful login
+      setActiveRole(null); // Will be resolved by fetchRoles preferring staff
     }
     setSubmitting(false);
   };
