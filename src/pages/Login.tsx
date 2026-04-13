@@ -10,7 +10,7 @@ import { GraduationCap, BookOpen } from 'lucide-react';
 import lauLogo from '@/assets/lau-aksob-logo.png';
 
 export default function Login() {
-  const { user, loading, signIn } = useAuth();
+  const { user, loading, signIn, setActiveRole } = useAuth();
   const [searchParams] = useSearchParams();
   const isStaff = searchParams.get('role') === 'staff';
 
