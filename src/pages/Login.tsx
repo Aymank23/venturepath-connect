@@ -18,7 +18,12 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  if (!loading && user) return <Navigate to="/app/dashboard" replace />;
+  if (!loading && user) {
+    if (isStaff) {
+      return <Navigate to="/app/dashboard" state={{ preferStaff: true }} replace />;
+    }
+    return <Navigate to="/app/dashboard" replace />;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
