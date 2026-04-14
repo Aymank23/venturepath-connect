@@ -1,5 +1,6 @@
+import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -40,9 +41,23 @@ import MentorOutcomes from "./pages/mentor/Outcomes";
 const queryClient = new QueryClient();
 
 function RoleDashboardRedirect() {
-  const { activeRole, loading } = useAuth();
+  const { activeRole, roles, loading, setActiveRole } = useAuth();
+  const location = useLocation();
+  const preferStaff = ((location.state as { preferStaff?: boolean } | null)?.preferStaff) === true;
+  const resolvedRole = preferStaff
+    ? roles.find(role => role !== 'applicant') ?? activeRole
+    : activeRole;
+
+  useEffect(() => {
+    if (!loading && resolvedRole && resolvedRole !== activeRole) {
+      setActiveRole(resolvedRole);
+    }
+  }, [activeRole, loading, resolvedRole, setActiveRole]);
+
   if (loading) return null;
-  switch (activeRole) {
+  if (preferStaff && roles.length > 0 && resolvedRole !== activeRole) return null;
+
+  switch (resolvedRole) {
     case 'admin': return <Navigate to="/app/admin" replace />;
     case 'reviewer': return <Navigate to="/app/reviewer" replace />;
     case 'mentor': return <Navigate to="/app/mentor" replace />;
