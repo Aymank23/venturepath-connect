@@ -5,6 +5,39 @@ import { supabase } from '@/integrations/supabase/client';
 type AppRole = 'applicant' | 'reviewer' | 'mentor' | 'admin';
 type PortalPreference = 'participant' | 'staff';
 
+const AUTH_PREFERENCE_STORAGE_KEY = 'iep-auth-preference';
+
+interface StoredAuthPreference {
+  userId: string | null;
+  activeRole: AppRole | null;
+  portal: PortalPreference | null;
+}
+
+const emptyStoredPreference: StoredAuthPreference = {
+  userId: null,
+  activeRole: null,
+  portal: null,
+};
+
+const readStoredPreference = (): StoredAuthPreference => {
+  if (typeof window === 'undefined') return emptyStoredPreference;
+
+  try {
+    const rawPreference = window.sessionStorage.getItem(AUTH_PREFERENCE_STORAGE_KEY);
+    if (!rawPreference) return emptyStoredPreference;
+
+    const parsedPreference = JSON.parse(rawPreference) as Partial<StoredAuthPreference>;
+
+    return {
+      userId: typeof parsedPreference.userId === 'string' ? parsedPreference.userId : null,
+      activeRole: parsedPreference.activeRole ?? null,
+      portal: parsedPreference.portal ?? null,
+    };
+  } catch {
+    return emptyStoredPreference;
+  }
+};
+
 interface SignInOptions {
   portal?: PortalPreference;
 }
@@ -31,21 +64,66 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [activeRole, setActiveRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
   const activeRoleRef = useRef<AppRole | null>(null);
-  const portalPreferenceRef = useRef<PortalPreference | null>(null);
+  const currentUserIdRef = useRef<string | null>(null);
+  const storedPreferenceRef = useRef<StoredAuthPreference>(readStoredPreference());
+  const portalPreferenceRef = useRef<PortalPreference | null>(storedPreferenceRef.current.portal);
 
-  const applyActiveRole = (role: AppRole | null) => {
+  const persistPreference = (nextPreference: StoredAuthPreference) => {
+    storedPreferenceRef.current = nextPreference;
+
+    if (typeof window === 'undefined') return;
+
+    if (!nextPreference.userId && !nextPreference.activeRole && !nextPreference.portal) {
+      window.sessionStorage.removeItem(AUTH_PREFERENCE_STORAGE_KEY);
+      return;
+    }
+
+    window.sessionStorage.setItem(AUTH_PREFERENCE_STORAGE_KEY, JSON.stringify(nextPreference));
+  };
+
+  const updateStoredPreference = (updates: Partial<StoredAuthPreference>) => {
+    persistPreference({
+      ...storedPreferenceRef.current,
+      ...updates,
+    });
+  };
+
+  const resetAuthState = () => {
+    currentUserIdRef.current = null;
+    activeRoleRef.current = null;
+    portalPreferenceRef.current = null;
+    setRoles([]);
+    setActiveRole(null);
+    persistPreference(emptyStoredPreference);
+  };
+
+  const applyActiveRole = (role: AppRole | null, userId: string | null = currentUserIdRef.current) => {
     activeRoleRef.current = role;
     setActiveRole(role);
+
+    updateStoredPreference({
+      userId,
+      activeRole: role,
+      portal: portalPreferenceRef.current,
+    });
   };
 
   const setSelectedRole = (role: AppRole) => {
     portalPreferenceRef.current = role === 'applicant' ? 'participant' : 'staff';
-    applyActiveRole(role);
+    applyActiveRole(role, currentUserIdRef.current);
   };
 
-  const resolveActiveRole = (availableRoles: AppRole[]) => {
-    if (activeRoleRef.current && availableRoles.includes(activeRoleRef.current)) {
+  const resolveActiveRole = (availableRoles: AppRole[], userId: string) => {
+    const storedActiveRole = storedPreferenceRef.current.userId === userId
+      ? storedPreferenceRef.current.activeRole
+      : null;
+
+    if (currentUserIdRef.current === userId && activeRoleRef.current && availableRoles.includes(activeRoleRef.current)) {
       return activeRoleRef.current;
+    }
+
+    if (storedActiveRole && availableRoles.includes(storedActiveRole)) {
+      return storedActiveRole;
     }
 
     const preferredStaffRole = availableRoles.find(role => role !== 'applicant');
@@ -62,13 +140,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const fetchRoles = async (userId: string) => {
-    const { data } = await supabase
+    currentUserIdRef.current = userId;
+
+    const { data, error } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', userId);
+
+    if (error) {
+      setRoles([]);
+      applyActiveRole(null, userId);
+      return [];
+    }
+
     const userRoles = (data?.map(r => r.role) || []) as AppRole[];
     setRoles(userRoles);
-    applyActiveRole(resolveActiveRole(userRoles));
+    applyActiveRole(resolveActiveRole(userRoles, userId), userId);
     return userRoles;
   };
 
@@ -77,11 +164,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
+        portalPreferenceRef.current = storedPreferenceRef.current.portal;
         await fetchRoles(session.user.id);
       } else {
-        setRoles([]);
-        portalPreferenceRef.current = null;
-        applyActiveRole(null);
+        resetAuthState();
       }
       setLoading(false);
     });
@@ -90,11 +176,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
+        portalPreferenceRef.current = storedPreferenceRef.current.portal;
         await fetchRoles(session.user.id);
       } else {
-        setRoles([]);
-        portalPreferenceRef.current = null;
-        applyActiveRole(null);
+        resetAuthState();
       }
       setLoading(false);
     });
@@ -113,18 +198,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string, options?: SignInOptions) => {
     portalPreferenceRef.current = options?.portal ?? null;
+    persistPreference({
+      userId: null,
+      activeRole: null,
+      portal: portalPreferenceRef.current,
+    });
+
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      portalPreferenceRef.current = null;
+      resetAuthState();
     }
     return { error };
   };
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    setRoles([]);
-    portalPreferenceRef.current = null;
-    applyActiveRole(null);
+    resetAuthState();
   };
 
   const hasRole = (role: AppRole) => roles.includes(role);

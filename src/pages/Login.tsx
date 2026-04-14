@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Navigate, Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,20 +10,13 @@ import { GraduationCap, BookOpen } from 'lucide-react';
 import lauLogo from '@/assets/lau-aksob-logo.png';
 
 export default function Login() {
-  const { user, loading, signIn } = useAuth();
+  const { user, loading, signIn, signOut } = useAuth();
   const [searchParams] = useSearchParams();
   const isStaff = searchParams.get('role') === 'staff';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
-
-  if (!loading && user) {
-    if (isStaff) {
-      return <Navigate to="/app/dashboard" state={{ preferStaff: true }} replace />;
-    }
-    return <Navigate to="/app/dashboard" replace />;
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +26,14 @@ export default function Login() {
       toast.error(error.message);
     }
     setSubmitting(false);
+  };
+
+  const handleUseDifferentAccount = async () => {
+    setSubmitting(true);
+    await signOut();
+    setSubmitting(false);
+    setEmail('');
+    setPassword('');
   };
 
   return (
@@ -57,19 +58,40 @@ export default function Login() {
         </div>
         <Card>
           <CardContent className="pt-6">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder={isStaff ? 'faculty@email.com' : 'yourname@lau.edu.lb'} />
+            {!loading && user ? (
+              <div className="space-y-4">
+                <div className="rounded-lg border bg-muted/30 p-4">
+                  <p className="font-medium">You’re already signed in as {user.email}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {isStaff
+                      ? 'Continue to the faculty workspace, or sign out to use another faculty account.'
+                      : 'Continue to your participant workspace, or sign out to use another account.'}
+                  </p>
+                </div>
+                <Button asChild className="w-full" variant={isStaff ? 'secondary' : 'default'}>
+                  <Link to="/app/dashboard" state={isStaff ? { preferStaff: true } : undefined}>
+                    Continue to Dashboard
+                  </Link>
+                </Button>
+                <Button type="button" className="w-full" variant="outline" disabled={submitting} onClick={handleUseDifferentAccount}>
+                  {submitting ? 'Signing out...' : 'Use a Different Account'}
+                </Button>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="••••••••" />
-              </div>
-              <Button type="submit" className="w-full" disabled={submitting} variant={isStaff ? 'secondary' : 'default'}>
-                {submitting ? 'Signing in...' : 'Sign In'}
-              </Button>
-            </form>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder={isStaff ? 'faculty@email.com' : 'yourname@lau.edu.lb'} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="••••••••" />
+                </div>
+                <Button type="submit" className="w-full" disabled={submitting} variant={isStaff ? 'secondary' : 'default'}>
+                  {submitting ? 'Signing in...' : 'Sign In'}
+                </Button>
+              </form>
+            )}
           </CardContent>
         </Card>
         {!isStaff && (
